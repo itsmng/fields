@@ -6,7 +6,7 @@
 
 ![Screenshot](./fields.gif)
 
-The fields plugin allows you to add custom fields on glpi types : tickets, computers, users...
+The fields plugin allows you to add custom fields on itsm-ng types : tickets, computers, users...
 
 Addionnal data can be added :
  * In object tab
@@ -23,7 +23,7 @@ Possible fields type are :
  * Yes / No
  * Date
  * Date / Hour
- * Glpi User list
+ * ITSM User list
 
 
 * Download : https://github.com/itsmng/itsm-plugin_fields/releases
