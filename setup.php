@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define ('PLUGIN_FIELDS_VERSION', '1.13.1');
+define ('PLUGIN_FIELDS_VERSION', '1.14');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_FIELDS_MIN_GLPI", "9.5");
@@ -71,7 +71,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @return void
  */
-function plugin_init_fields() {
+function plugin_init_fields() : void {
    global $PLUGIN_HOOKS;
 
    $PLUGIN_HOOKS['csrf_compliant']['fields'] = true;
@@ -105,13 +105,7 @@ function plugin_init_fields() {
          }
       }
 
-      if ($plugin->isActivated('fusioninventory')) {
-         $PLUGIN_HOOKS['fusioninventory_inventory']['fields']
-            = ['PluginFieldsInventory', 'updateInventory'];
-      }
-
       // complete rule engine
-      $PLUGIN_HOOKS['use_rules']['fields']    = ['PluginFusioninventoryTaskpostactionRule'];
       $PLUGIN_HOOKS['rule_matched']['fields'] = 'plugin_fields_rule_matched';
 
       if (isset($_SESSION['glpiactiveentities'])) {
@@ -184,12 +178,12 @@ function plugin_init_fields() {
  *
  * @return array
  */
-function plugin_version_fields() {
+function plugin_version_fields() : array {
    return [
       'name'           => __("Additionnal fields", "fields"),
       'version'        => PLUGIN_FIELDS_VERSION,
-      'author'         => 'Teclib\', Olivier Moron',
-      'homepage'       => 'https://github.com/pluginsGLPI/fields',
+      'author'         => 'Teclib\', Olivier Moron, Minzord',
+      'homepage'       => 'https://github.com/itsmng/itsm-plugin_fields',
       'license'        => 'GPLv2+',
       'requirements'   => [
          'glpi' => [
@@ -207,7 +201,7 @@ function plugin_version_fields() {
  *
  * @return boolean
  */
-function plugin_fields_check_prerequisites() {
+function plugin_fields_check_prerequisites() : bool {
    if (!is_readable(__DIR__ . '/vendor/autoload.php') || !is_file(__DIR__ . '/vendor/autoload.php')) {
       echo "Run composer install --no-dev in the plugin directory<br>";
       return false;
@@ -221,7 +215,7 @@ function plugin_fields_check_prerequisites() {
  *
  * @return void
  */
-function plugin_fields_checkFiles() {
+function plugin_fields_checkFiles() : void {
    global $DB;
 
    // Clean all existing files
@@ -246,8 +240,12 @@ function plugin_fields_checkFiles() {
       }
    }
 }
-
-function plugin_fields_exportBlockAsYaml($container_id = null) {
+/**
+ * Export Block as Yaml
+ *
+ * @return boolean
+ */
+function plugin_fields_exportBlockAsYaml($container_id = null) : bool {
    global $DB;
 
    $plugin = new Plugin();
