@@ -763,6 +763,20 @@ class PluginFieldsField extends CommonDBTM {
             $readonly = $field['is_readonly'];
             switch ($field['type']) {
                case 'number':
+                    $value = Html::cleanInputText($value);
+                    if ($canedit && !$readonly) {
+                         renderTwigTemplate('/macros/wrappedInput.twig', [
+                            'title' => $field['name'],
+                            'input' => [
+                             'type' => 'number',
+                             'name' => $field['name'],
+                             'value' => $value
+                            ]
+                         ]);
+                    } else {
+                         $html.= $value;
+                    }
+                    break;
                case 'text':
                   $value = Html::cleanInputText($value);
                   if ($canedit && !$readonly) {
@@ -782,7 +796,15 @@ class PluginFieldsField extends CommonDBTM {
                case 'url':
                   $value = Html::cleanInputText($value);
                   if ($canedit && !$readonly) {
-                     $html.= Html::input($field['name'], ['value' => $value]);
+                     renderTwigTemplate('/macros/wrappedInput.twig', [
+                        'title' => $field['name'],
+                        'input' => [
+                            'type' => 'text',
+                            'name' => $field['name'],
+                            'value' => $value
+                        ]
+                     ]);
+
                      if ($value != '') {
                         $html .= "<a target=\"_blank\" href=\"$value\">" . __('show', 'fields') . "</a>";
                      }
@@ -816,10 +838,16 @@ class PluginFieldsField extends CommonDBTM {
                      } else {
                         $dropdown_itemtype = PluginFieldsDropdown::getClassname($field['name']);
                      }
-                     $html.= Dropdown::show($dropdown_itemtype,
-                                            ['value'   => $value,
-                                             'entity'  => $obj->getEntityID(),
-                                             'display' => false]);
+                     renderTwigTemplate('/macros/wrappedInput.twig', [
+                        'title' => $field['name'],
+                        'input' => [
+                           'name' => $field['name'],
+                           'type' => 'select',
+                           'values' => getOptionForItems($dropdown_itemtype),
+                           'value' => $value,
+                           'actions' => getItemActionButtons(['info'], $dropdown_itemtype),
+                        ]
+                  ]);
                   } else {
                      $dropdown_table = "glpi_plugin_fields_".$field['name']."dropdowns";
                      $html.= Dropdown::getDropdownName($dropdown_table, $value);
@@ -872,12 +900,16 @@ class PluginFieldsField extends CommonDBTM {
                      break;
                   }
                   if ($canedit && !$readonly) {
-                     $html.= User::dropdown(['name'      => $field['name'],
-                                             'value'     => $value,
-                                             'entity'    => -1,
-                                             'right'     => 'all',
-                                             'display'   => false,
-                                             'condition' => ['is_active' => 1, 'is_deleted' => 0]]);
+                     renderTwigTemplate('/macros/wrappedInput.twig', [
+                           'title' => $field['name'],
+                           'input' => [
+                              'name' => $field['name'],
+                              'type' => 'select',
+                              'values' => getOptionForItems("User"),
+                              'value' => $value,
+                              'actions' => getItemActionButtons(['info'], "User"),
+                           ]
+                     ]);
                   } else {
                      $showuserlink = 0;
                      if (Session::haveRight('user', READ)) {
@@ -891,12 +923,16 @@ class PluginFieldsField extends CommonDBTM {
                      break;
                   }
                   if ($canedit && !$readonly) {
-                     $html.= OperatingSystem::dropdown(['name'      => $field['name'],
-                                             'value'     => $value,
-                                             'entity'    => -1,
-                                             'right'     => 'all',
-                                             'display'   => false//,
-                                             /*'condition' => 'is_active=1 && is_deleted=0'*/]);
+                     renderTwigTemplate('/macros/wrappedInput.twig', [
+                        'title' => $field['name'],
+                        'input' => [
+                           'name' => $field['name'],
+                           'type' => 'select',
+                           'values' => getOptionForItems("OperatingSystem"),
+                           'value' => $value,
+                           'actions' => getItemActionButtons(['info'], "OperatingSystem"),
+                        ]
+                  ]);
                   } else {
                      $os = new OperatingSystem();
                      $os->getFromDB($value);
