@@ -145,7 +145,7 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
          ');
 
          echo "<div class='center'>".
-              "<a class='vsubmit' href='javascript:addTranslation".$item->getID()."$rand();'>".
+              "<a class='btn btn-sm btn-secondary' href='javascript:addTranslation".$item->getID()."$rand();'>".
               __('Add a new translation')."</a></div><br>";
       }
 
@@ -160,29 +160,22 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
 
       if (count($found) > 0) {
          if ($canedit) {
-            Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
-            $massiveactionparams = ['container' => 'mass'.__CLASS__.$rand];
+            $massiveactionparams = [
+                'container' => 'mass'.__CLASS__.$rand,
+                'display_arrow' => false,
+            ];
             Html::showMassiveActions($massiveactionparams);
          }
-         echo "<div class='center'>";
-         echo "<table class='tab_cadre_fixehov'><tr class='tab_bg_2'>";
-         echo "<th colspan='4'>".__("List of translations")."</th></tr>";
-         if ($canedit) {
-            echo "<th width='10'>";
-            echo Html::getCheckAllAsCheckbox('mass'.__CLASS__.$rand);
-            echo "</th>";
-         }
-         echo "<th>".__("Language", "fields")."</th>";
-         echo "<th>".__("Label", "fields")."</th>";
+         $fields = [
+            'language' => __("Language", "fields"),
+            'label'    => __("Label", "fields"),
+         ];
+         $values = [];
+         $massive_action = [];
          foreach ($found as $data) {
-            echo "<tr class='tab_bg_1' ".($canedit ? "style='cursor:pointer'
-                      onClick=\"viewEditTranslation".$data['id']."$rand();\"" : '').">";
             if ($canedit) {
-               echo "<td class='center'>";
-               Html::showMassiveActionCheckBox(__CLASS__, $data["id"]);
-               echo "</td>";
+                $massive_action[] = sprintf('item[%s][%s]', self::class, $data["id"]);
             }
-            echo "<td>";
             if ($canedit) {
                echo Html::scriptBlock('
                   viewEditTranslation' . $data['id'] . $rand . ' = function() {
@@ -198,17 +191,17 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
                   };
                ');
             }
-            echo Dropdown::getLanguageName($data['language']);
-            echo "</td><td>";
-            echo  $data['label'];
-            echo "</td></tr>";
+            $values[] = [
+                'language' => Dropdown::getLanguageName($data['language']),
+                'label'    => '<a href="javascript:viewEditTranslation'.$data['id'].$rand.'();">'.$data['label'].'</a>',
+            ];
          }
-         echo "</table>";
-         if ($canedit) {
-            $massiveactionparams['ontop'] = false;
-            Html::showMassiveActions($massiveactionparams);
-            Html::closeForm();
-         }
+         renderTwigTemplate('table.twig', [
+            'id'         => 'mass'.__CLASS__.$rand,
+            'fields'     => $fields,
+            'values'     => $values,
+            'massive_action' => $massive_action,
+         ]);
       } else {
          echo "<table class='tab_cadre_fixe'><tr class='tab_bg_2'>";
          echo "<th class='b'>".__("No translation found")."</th></tr></table>";

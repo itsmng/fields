@@ -97,7 +97,7 @@ class PluginFieldsProfile extends CommonDBTM {
       echo "<tr><td class='tab_bg_2 center' colspan='2'>";
       echo "<input type='hidden' name='plugin_fields_containers_id' value='".
             $item->fields['id']."' />";
-      echo "<input type='submit' name='update' value=\""._sx("button", "Save")."\" class='submit'>";
+      echo "<input type='submit' name='update' value=\""._sx("button", "Save")."\" class='btn btn-secondary'>";
       echo "</td>";
       echo "</tr>";
       echo "</table></div>";

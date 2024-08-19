@@ -368,7 +368,7 @@ class PluginFieldsField extends CommonDBTM {
          echo "<th>".__("Mandatory field")    ."</th>";
          echo "<th>".__("Active")             ."</th>";
          echo "<th>".__("Read only", "fields")."</th>";
-         echo "<th width='16'>&nbsp;</th>";
+         echo "<th>&nbsp;</th>";
          echo "</tr>";
 
          $fields_type = self::getTypes();

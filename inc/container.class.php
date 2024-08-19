@@ -40,8 +40,8 @@ class PluginFieldsContainer extends CommonDBTM {
    }
 
    static function titleList() {
-      echo "<div class='center'><a class='vsubmit' href='regenerate_files.php'><i class='pointer fa fa-refresh'></i>&nbsp;".
-            __("Regenerate container files", "fields")."</a>&nbsp;&nbsp;<a class='vsubmit' href='export_to_yaml.php'><i class='pointer fa fa-refresh'></i>&nbsp;".
+      echo "<div class='center'><a class='btn btn-sm btn-secondary' href='regenerate_files.php'><i class='pointer fa fa-refresh'></i>&nbsp;".
+            __("Regenerate container files", "fields")."</a>&nbsp;&nbsp;<a class='btn btn-sm btn-secondary' href='export_to_yaml.php'><i class='pointer fa fa-refresh'></i>&nbsp;".
             __("Export to YAML", "fields")."</a></div><br>";
 
    }
@@ -621,33 +621,118 @@ class PluginFieldsContainer extends CommonDBTM {
    public function showForm($ID, $options = []) {
       global $CFG_GLPI;
 
-      echo "<div class='center'><a class='vsubmit' href='export_to_yaml.php?id=".$ID."'><i class='pointer fa fa-refresh'></i>&nbsp;".
+      echo "<div class='center'><a class='btn btn-sm btn-secondary' href='export_to_yaml.php?id=".$ID."'><i class='pointer fa fa-refresh'></i>&nbsp;".
       __("Export to YAML", "fields")."</a></div><br>";
 
-      $this->initForm($ID, $options);
-      $this->showFormHeader($options);
       $rand = mt_rand();
+      $is_domtab = isset($params['type']) && $params['type'] == 'domtab';
+      $form = [
+        'action' => $this->getFormURL(),
+        'buttons' => [
+            ($this->canUpdateItem() ? [
+               'type' => 'submit',
+               'name' => $this->isNewID($ID) ? 'add' : 'update',
+               'value' => $this->isNewID($ID) ? __('Add') : __('Update'),
+               'class' => 'btn btn-secondary'
+            ] : []),
+         ],
+         'content' => [
+            $this->getTypeName(1) => [
+                'visible' => true,
+                'inputs' => [
+                    __('Label') => [
+                        'type' => 'text',
+                        'name' => 'label',
+                        'value' => $this->fields['label'],
+                        'required' => true,
+                    ],
+                    __('Type') => $ID > 0 ? [
+                        'content' => self::getTypes()[$this->fields['type']],
+                    ] : [
+                        'type' => 'select',
+                        'name' => 'type',
+                        'id' => 'dropdown_type'.$rand,
+                        'values' => self::getTypes(),
+                        'value' => $this->fields['type'],
+                        'required' => true,
+                        'hooks' => [
+                            'change' => <<<JS
+                                $.ajax({
+                                    url: "../ajax/container_itemtypes_dropdown.php",
+                                    type: "POST",
+                                    data: {
+                                        type: $('#dropdown_type{$rand}').val(),
+                                        itemtype: "{$this->fields['itemtypes']}",
+                                        subtype: "{$this->fields['subtype']}",
+                                        rand: {$rand}
+                                    },
+                                    success: function(data) {
+                                        jQuery('#itemtypes{$rand}').parent().html(data);
+                                    }
+                                });
+                            JS,
+                        ],
+                    ],
+                    __('Associated item type') => $ID > 0 ? [
+                        'content' => (function() {
+                            $types = json_decode($this->fields['itemtypes'], true);
+                            $obj = '';
+                            $count = count($types);
+                            $i = 1;
+                            foreach ($types as $type) {
+                                // prevent usage of plugin class if not loaded
+                                if (!class_exists($type)) {
+                                    continue;
+                                }
+                                $name_type = getItemForItemtype($type);
+                                $obj .= $name_type->getTypeName(2);
+                                if ($count > $i) {
+                                    $obj .= ", ";
+                                }
+                                $i++;
+                            }
+                            return $obj;
+                        })(),
+                    ] : [
+                        'type' => 'select',
+                        'name' => 'itemtypes',
+                        'id' => 'itemtypes'.$rand,
+                        'values' => self::getItemtypes($is_domtab),
+                        'value' => $this->fields['itemtypes'],
+                        'required' => true,
+                        'multiple' => !$is_domtab,
+                    ],
+                    __('Tab', 'fields') => !empty($this->fields["subtype"]) ? [
+                        'content' => function() {
+                            $out = "<span id='subtype_$rand'></span>";
+                            if ($ID > 0 && !empty($this->fields["subtype"])) {
+                                $itemtypes = json_decode($this->fields["itemtypes"], true);
+                                $itemtype = array_shift($itemtypes);
+                                $item = new $itemtype;
+                                $item->getEmpty();
+                                $tabs = self::getSubtypes($item);
+                                $out .= Dropdown::showFromArray('subtype', $tabs,
+                                                                ['value'   => $this->fields["subtype"],
+                                                                 'width'   => '100%',
+                                                                 'display' => false]);
+                                $out .= "<script type='text/javascript'>jQuery('#tab_tr').show();</script>";
+                            }
+                            return $out;
+                        },
+                    ] : [],
+                    __('Active') => [
+                        'type' => 'checkbox',
+                        'name' => 'is_active',
+                        'value' => $this->fields['is_active'],
+                        'required' => true,
+                    ],
+                ],
+            ]
+         ]
+      ];
+      renderTwigForm($form, '', $this->fields);
 
-      echo "<tr>";
-      echo "<td width='20%'>".__("Label")." : </td>";
-      echo "<td width='30%'>";
-      Html::autocompletionTextField($this, 'label', ['value' => $this->fields["label"]]);
-      echo "</td>";
-      echo "<td width='20%'>&nbsp;</td>";
-      echo "<td width='30%'>&nbsp;</td>";
-      echo "</tr>";
-
-      echo "<tr>";
-      echo "<td>".__("Type")." : </td>";
-      echo "<td>";
-      if ($ID > 0) {
-         $types = self::getTypes();
-         echo $types[$this->fields["type"]];
-      } else {
-         Dropdown::showFromArray('type',
-                                 self::getTypes(),
-                                 ['value' => $this->fields["type"],
-                                  'rand'  => $rand]);
+      if ($ID <= 0) {
          Ajax::updateItemOnSelectEvent("dropdown_type$rand",
                                        "itemtypes_$rand",
                                        "../ajax/container_itemtypes_dropdown.php",
@@ -656,66 +741,15 @@ class PluginFieldsContainer extends CommonDBTM {
                                         'subtype'  => $this->fields['subtype'],
                                         'rand'     => $rand]);
       }
-      echo "</td>";
-      echo "<td>".__("Associated item type")." : </td>";
-      echo "<td>";
-      if ($ID > 0) {
-         $types = json_decode($this->fields['itemtypes']);
-         $obj = '';
-         $count = count($types);
-         $i = 1;
-         foreach ($types as $type) {
-            // prevent usage of plugin class if not loaded
-            if (!class_exists($type)) {
-               continue;
-            }
-
-            $name_type = getItemForItemtype($type);
-            $obj .= $name_type->getTypeName(2);
-            if ($count > $i) {
-               $obj .= ", ";
-            }
-            $i++;
-         }
-         echo $obj;
-
-      } else {
-         echo "&nbsp;<span id='itemtypes_$rand'>";
-         self::showFormItemtype(['rand'    => $rand,
-                                 'subtype' => $this->fields['subtype']]);
-         echo "</span>";
+      if ($is_domtab) {
+         Ajax::updateItemOnSelectEvent(["dropdown_type$rand", "dropdown_itemtypes$rand"],
+                                       "subtype_$rand",
+                                       "../ajax/container_subtype_dropdown.php",
+                                       ['type'     => '__VALUE0__',
+                                        'itemtype' => '__VALUE1__',
+                                        'subtype'  => $this->fields["subtype"],
+                                        'rand'     => $rand]);
       }
-      echo "</td>";
-      echo "</tr>";
-
-      $display = "style='display:none'";
-      if (!empty($this->fields["subtype"])) {
-         $display = "";
-      }
-      echo "<tr id='tab_tr' $display>";
-      echo "<td colspan='2'></td>";
-      echo "<td>".__("Tab", "fields")." : </td>";
-      echo "<td>";
-      echo "&nbsp;<span id='subtype_$rand'></span>";
-      if ($ID > 0 && !empty($this->fields["subtype"])) {
-         $itemtypes = json_decode($this->fields["itemtypes"], true);
-         $itemtype = array_shift($itemtypes);
-         $item = new $itemtype;
-         $item->getEmpty();
-         $tabs = self::getSubtypes($item);
-         echo $tabs[$this->fields["subtype"]];
-      }
-      echo "</td>";
-      echo "</tr>";
-
-      echo "<tr>";
-      echo "<td>".__("Active")." : </td>";
-      echo "<td>";
-      Dropdown::showYesNo("is_active", $this->fields["is_active"]);
-      echo "</td>";
-      echo "</tr>";
-
-      $this->showFormButtons($options);
 
       return true;
    }
@@ -726,21 +760,35 @@ class PluginFieldsContainer extends CommonDBTM {
       $is_domtab = isset($params['type']) && $params['type'] == 'domtab';
 
       $rand = $params['rand'];
-      Dropdown::showFromArray("itemtypes", self::getItemtypes($is_domtab),
-                              ['rand'                => $rand,
-                               'multiple'            => !$is_domtab,
-                               'width'               => 200,
-                               'display_emptychoice' => $is_domtab]);
-
-      if ($is_domtab) {
-         Ajax::updateItemOnSelectEvent(["dropdown_type$rand", "dropdown_itemtypes$rand"],
-                                       "subtype_$rand",
-                                       "../ajax/container_subtype_dropdown.php",
-                                       ['type'     => '__VALUE0__',
-                                        'itemtype' => '__VALUE1__',
-                                        'subtype'  => $params["subtype"],
-                                        'rand'     => $rand]);
-      }
+      renderTwigTemplate('macros/input.twig', [
+         'type'        => 'select',
+         'name'        => 'itemtypes[]',
+         'id'          => 'itemtypes'.$rand,
+         'values'      => self::getItemtypes($is_domtab),
+         'value'       => $params['itemtype'],
+         'required'    => true,
+         'multiple'    => !$is_domtab,
+         'display'     => false,
+         'width'       => 200,
+         'display_emptychoice' => $is_domtab,
+         'hooks' => [
+            'change' => <<<JS
+               $.ajax({
+                  url: "../ajax/container_itemtypes_dropdown.php",
+                  type: "POST",
+                  data: {
+                     type: '__VALUE0__',
+                     itemtype: '__VALUE1__',
+                     subtype: {$params['subtype']},
+                     rand: {$rand}
+                  },
+                  success: function(data) {
+                     jQuery('#itemtypes{$rand}').parent().html(data);
+                  }
+               });
+            JS,
+         ],
+      ]);
    }
 
    /**
