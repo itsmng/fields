@@ -57,17 +57,22 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
 
          $query = "CREATE TABLE IF NOT EXISTS `$table` (
                   `id`                         INT(11)       NOT NULL auto_increment,
-                  `plugin_fields_itemtype`     VARCHAR(30)  NOT NULL,
-                  `plugin_fields_items_id`     INT(11)      NOT NULL,
+                  `itemtype`     VARCHAR(30)  NOT NULL,
+                  `items_id`     INT(11)      NOT NULL,
                   `language`                   VARCHAR(5)   NOT NULL,
                   `label`                      VARCHAR(255) DEFAULT NULL,
                   PRIMARY KEY                  (`id`),
-                  KEY `plugin_fields_itemtype` (`plugin_fields_itemtype`),
-                  KEY `plugin_fields_items_id` (`plugin_fields_items_id`),
+                  KEY `itemtype` (`itemtype`),
+                  KEY `items_id` (`items_id`),
                   KEY `language`               (`language`),
-                  UNIQUE KEY `unicity` (`plugin_fields_itemtype`, `plugin_fields_items_id`, `language`)
+                  UNIQUE KEY `unicity` (`itemtype`, `items_id`, `language`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
             $DB->query($query) or die ($DB->error());
+      } else if ($version == '1.15') {
+         $query = "ALTER TABLE `$table`
+                  CHANGE `plugin_fields_itemtype` `itemtype` VARCHAR(30) NOT NULL,
+                  CHANGE `plugin_fields_items_id` `items_id` INT(11) NOT NULL;";
+         $DB->query($query) or die ($DB->error());
       }
 
       $migration->displayMessage("Updating $table");
@@ -91,8 +96,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
 
       $translation = new PluginFieldsLabelTranslation();
       $translation->add([
-         'plugin_fields_itemtype' => $item::getType(),
-         'plugin_fields_items_id' => $item->getID(),
+         'itemtype' => $item::getType(),
+         'items_id' => $item->getID(),
          'language'               => $_SESSION['glpilanguage'],
          'label'                  => $item->fields['label']
       ]);
@@ -103,8 +108,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
       $nb = countElementsInTable(
          self::getTable(),
          [
-            'plugin_fields_itemtype' => $item::getType(),
-            'plugin_fields_items_id' => $item->getID(),
+            'itemtype' => $item::getType(),
+            'items_id' => $item->getID(),
          ]
       );
       return self::createTabEntry(self::getTypeName($nb), $nb);
@@ -152,8 +157,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
       $obj   = new self;
       $found = $obj->find(
          [
-            'plugin_fields_itemtype' => $item::getType(),
-            'plugin_fields_items_id' => $item->getID(),
+            'itemtype' => $item::getType(),
+            'items_id' => $item->getID(),
          ],
          "language ASC"
       );
@@ -233,8 +238,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
       echo "<tr class='tab_bg_1'>";
       echo "<td>".__('Language')."&nbsp;:</td>";
       echo "<td>";
-      echo "<input type='hidden' name='plugin_fields_itemtype' value='{$itemtype}'>";
-      echo "<input type='hidden' name='plugin_fields_items_id' value='{$items_id}'>";
+      echo "<input type='hidden' name='itemtype' value='{$itemtype}'>";
+      echo "<input type='hidden' name='items_id' value='{$items_id}'>";
       if ($id > 0) {
          echo Dropdown::getLanguageName($this->fields['language']);
       } else {
@@ -271,8 +276,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
 
       $tab = [];
       foreach ($DB->request(self::getTable(),
-                            "`plugin_fields_itemtype` = '$itemtype' AND
-                             `plugin_fields_items_id` = '$items_id'") as $data) {
+                            "`itemtype` = '$itemtype' AND
+                             `items_id` = '$items_id'") as $data) {
          $tab[$data['language']] = $data['language'];
       }
       return $tab;
@@ -287,8 +292,8 @@ class PluginFieldsLabelTranslation extends CommonDBTM {
     */
    static public function getLabelFor(array $item) {
       $obj   = new self;
-      $found = $obj->find(['plugin_fields_itemtype' => $item['itemtype'],
-                           'plugin_fields_items_id' => $item['id'],
+      $found = $obj->find(['itemtype' => $item['itemtype'],
+                           'items_id' => $item['id'],
                            'language' => $_SESSION['glpilanguage']]);
 
       if (count($found) > 0) {

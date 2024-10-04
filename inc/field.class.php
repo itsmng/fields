@@ -199,8 +199,8 @@ class PluginFieldsField extends CommonDBTM {
       //delete label translations
       $translation_obj = new PluginFieldsLabelTranslation();
       $translation_obj->deleteByCriteria([
-         'plugin_fields_itemtype' => self::getType(),
-         'plugin_fields_items_id' => $this->fields['id']
+         'itemtype' => self::getType(),
+         'items_id' => $this->fields['id']
       ]);
 
       if (isset($oldname)) {
