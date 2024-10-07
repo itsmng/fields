@@ -566,7 +566,7 @@ class PluginFieldsField extends CommonDBTM {
       global $CFG_GLPI;
 
       $item    = $params['item'];
-      $options = $params['options'];
+      $options = $params['options'] ?? '';
 
       $functions = array_column(debug_backtrace(), 'function');
 
