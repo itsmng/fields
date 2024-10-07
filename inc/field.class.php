@@ -513,7 +513,7 @@ class PluginFieldsField extends CommonDBTM {
       if ($canedit) {
          echo "<tr><td class='tab_bg_2 center' colspan='4'>";
          echo "<input type='submit' name='update_fields_values' value=\"".
-            _sx("button", "Save")."\" class='submit'>";
+            _sx("button", "Save")."\" class='btn btn-secondary'>";
          echo "</td></tr>";
       }
 
@@ -766,7 +766,7 @@ class PluginFieldsField extends CommonDBTM {
                     $value = Html::cleanInputText($value);
                     if ($canedit && !$readonly) {
                          renderTwigTemplate('/macros/wrappedInput.twig', [
-                            'title' => $field['name'],
+                            'title' => $field['label'],
                             'input' => [
                              'type' => 'number',
                              'name' => $field['name'],
@@ -782,7 +782,7 @@ class PluginFieldsField extends CommonDBTM {
                   if ($canedit && !$readonly) {
                     //  $html.= Html::input($field['name'], ['value' => $value]);
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                             'type' => 'text',
                             'name' => $field['name'],
@@ -797,7 +797,7 @@ class PluginFieldsField extends CommonDBTM {
                   $value = Html::cleanInputText($value);
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                             'type' => 'text',
                             'name' => $field['name'],
@@ -815,7 +815,7 @@ class PluginFieldsField extends CommonDBTM {
                case 'textarea':
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                             'type' => 'textarea',
                             'name' => $field['name'],
@@ -839,7 +839,7 @@ class PluginFieldsField extends CommonDBTM {
                         $dropdown_itemtype = PluginFieldsDropdown::getClassname($field['name']);
                      }
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                            'name' => $field['name'],
                            'type' => 'select',
@@ -856,7 +856,7 @@ class PluginFieldsField extends CommonDBTM {
                case 'yesno':
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                             'type' => 'checkbox',
                             'name' => $field['name'],
@@ -870,7 +870,7 @@ class PluginFieldsField extends CommonDBTM {
                case 'date':
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                               'type' => 'date',
                               'name' => $field['name'],
@@ -884,7 +884,7 @@ class PluginFieldsField extends CommonDBTM {
                case 'datetime':
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                                  'type' => 'datetime-local',
                                  'name' => $field['name'],
@@ -901,7 +901,7 @@ class PluginFieldsField extends CommonDBTM {
                   }
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                           'title' => $field['name'],
+                           'title' => $field['label'],
                            'input' => [
                               'name' => $field['name'],
                               'type' => 'select',
@@ -924,7 +924,7 @@ class PluginFieldsField extends CommonDBTM {
                   }
                   if ($canedit && !$readonly) {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
-                        'title' => $field['name'],
+                        'title' => $field['label'],
                         'input' => [
                            'name' => $field['name'],
                            'type' => 'select',
