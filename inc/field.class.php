@@ -591,10 +591,7 @@ class PluginFieldsField extends CommonDBTM
      */
     public static function showForTab($params)
     {
-        global $CFG_GLPI;
-
         $item    = $params['item'];
-        $options = $params['options'] ?? [];
 
         $functions = array_column(debug_backtrace(), 'function');
 
@@ -724,8 +721,10 @@ class PluginFieldsField extends CommonDBTM
         //show all fields
         $html = "";
         $odd = 0;
+        $html .= "<div class='row mb-3'>";
         foreach ($fields as $field) {
 
+            $html .= "<div class='col-md-12 col-lg-6 col-xl-4'>";
             if ($field['type'] === 'header') {
                 $html .= "<tr class='tab_bg_2'>";
                 $field['itemtype'] = self::getType();
@@ -920,7 +919,9 @@ class PluginFieldsField extends CommonDBTM
                     $odd++;
                 }
             }
+            $html .= "</div>";
         }
+        echo "</div>";
         if ($show_table && $odd % 2 == 1) {
             $html .= "</tr>";
         }
