@@ -28,24 +28,25 @@
  * -------------------------------------------------------------------------
  */
 
-class PluginFieldsInventory extends CommonDBTM {
-
-   static function updateFields($containersData, $itemtype, $items_id) {
-      if (isset($containersData['ID'])) {
-         // $containersData contains only one element, encapsulate it into an array
-         $containersData = [$containersData];
-      }
-      foreach ($containersData as $key => $containerData) {
-         $container = new PluginFieldsContainer();
-         $container->getFromDB($containerData['ID']);
-         $data = [];
-         $data["items_id"] = $items_id;
-         $data["itemtype"] = $itemtype;
-         $data["plugin_fields_containers_id"] = $containerData['ID'];
-         foreach ($containerData['FIELDS'] as $key => $value) {
-            $data[strtolower($key)] = $value;
-         }
-         $container->updateFieldsValues($data, $itemtype, false);
-      }
-   }
+class PluginFieldsInventory extends CommonDBTM
+{
+    public static function updateFields($containersData, $itemtype, $items_id)
+    {
+        if (isset($containersData['ID'])) {
+            // $containersData contains only one element, encapsulate it into an array
+            $containersData = [$containersData];
+        }
+        foreach ($containersData as $key => $containerData) {
+            $container = new PluginFieldsContainer();
+            $container->getFromDB($containerData['ID']);
+            $data = [];
+            $data["items_id"] = $items_id;
+            $data["itemtype"] = $itemtype;
+            $data["plugin_fields_containers_id"] = $containerData['ID'];
+            foreach ($containerData['FIELDS'] as $key => $value) {
+                $data[strtolower($key)] = $value;
+            }
+            $container->updateFieldsValues($data, $itemtype, false);
+        }
+    }
 }

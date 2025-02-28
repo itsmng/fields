@@ -32,14 +32,14 @@
 * @brief
 */
 
-include ('../../../inc/includes.php');
+include('../../../inc/includes.php');
 header("Content-Type: text/html; charset=UTF-8");
 Html::header_nocache();
 
 Session::checkLoginUser();
 
 if (!isset($_POST['itemtype']) || !isset($_POST['items_id']) || !isset($_POST['id'])) {
-   exit();
+    exit();
 }
 
 $translation = new PluginFieldsLabelTranslation();
@@ -47,7 +47,7 @@ $canedit = $translation->can($translation->getID(), CREATE);
 if ($canedit) {
     $translation->showForm($_POST['itemtype'], $_POST['items_id'], $_POST['id']);
 } else {
-   echo __('Access denied');
+    echo __('Access denied');
 }
 
 Html::ajaxFooter();
