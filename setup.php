@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define ('PLUGIN_FIELDS_VERSION', '2.0.0');
+define ('PLUGIN_FIELDS_VERSION', '2.0.1');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_FIELDS_MIN_GLPI", "9.5");
