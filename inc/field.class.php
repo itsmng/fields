@@ -843,7 +843,7 @@ class PluginFieldsField extends CommonDBTM {
                      renderTwigTemplate('/macros/wrappedInput.twig', [
                         'title' => $field['label'],
                         'input' => [
-                           'name' => $field['name'],
+                           'name' => 'plugin_fields_' . $field['name'] . 'dropdowns_id',
                            'type' => 'select',
                            'values' => getOptionForItems($dropdown_itemtype),
                            'value' => $value,
