@@ -876,9 +876,6 @@ class PluginFieldsContainer extends CommonDBTM {
           foreach ((new PluginGenericobjectType())->find(['is_active' => 1]) as $type) {
              $GenObjectName = $type['itemtype']::getTypeName(2);
              $tabs[Plugin::getTypeName() . ' - ' . __("Objects management", "genericobject")][$type['itemtype']]= $GenObjectName;
-             if (class_exists('PluginGenericobject'.$GenObjectName)) {
-                 Plugin::registerClass($type['itemtype']);
-             }
           }
       }
 
