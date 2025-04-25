@@ -23,21 +23,13 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: none
 
-      - name: Install NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Run composer install
         run: composer install --no-dev
-
-      - name: Run yarn install
-        run: yarn install
 
       - name: Build project
         run: |
           cd /home/runner/work/fields/
-          rm -r fields/.git* fields/tools fields/.yarnrc fields/README.md fields/composer.* fields/package.*
+          rm -r fields/.git* fields/tools fields/README.md fields/composer.*
           tar -zcvf fields-${{ github.ref_name }}.tgz fields
 
       - name: Upload release
