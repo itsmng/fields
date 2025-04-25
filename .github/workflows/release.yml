@@ -1,40 +1,38 @@
-name: "Plugin release"
+name: Release workflow
 
 on:
   push:
     tags:
-       - '*'
+      - '*'
+
+permissions:
+  contents: write
 
 jobs:
-  create-release:
-    name: "Create release"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Extract tag name"
+  release:
+    name: Release on GitHub
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build project
         run: |
-          echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: "Checkout"
-        uses: "actions/checkout@v2"
-      - name: "Build package"
-        id: "build-package"
-        uses: "glpi-project/tools/github-actions/build-package@0.1.15"
+          cd /home/runner/work/fields/
+          rm -r fields/.git* fields/tools
+          tar -zcvf fields-${{ github.ref_name }}.tgz fields
+
+      - name: Upload release
+        uses: actions/upload-artifact@v4
         with:
-          plugin-version: ${{ env.tag_name }}
-      - name: "Create release"
-        id: "create-release"
-        uses: "actions/create-release@v1"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: fields-${{ github.ref_name }}.tgz
+          path: /home/runner/work/fields/fields-${{ github.ref_name }}.tgz
+      
+      - name: Create release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.tag_name }}
-          release_name: ${{ env.tag_name }}
+          files: /home/runner/work/fields/fields-${{ github.ref_name }}.tgz
+          body: "New release is available"
+          name: ${{ github.ref_name }}
           draft: true
-      - name: "Attach package to release"
-        uses: "actions/upload-release-asset@v1"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: ${{ steps.build-package.outputs.package-path }}
-          asset_name: ${{ steps.build-package.outputs.package-basename }}
-          asset_content_type: " application/x-bzip2"
+          generate_release_notes: true
