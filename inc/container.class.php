@@ -824,12 +824,14 @@ class PluginFieldsContainer extends CommonDBTM {
          'PassiveDCEquipment' => PassiveDCEquipment::getTypeName(2),
       ];
 
-      foreach ((new PluginGenericobjectType())->find([]) as $type) {
-         $GenObjectName = $type['itemtype']::getTypeName(2);
-         $tabs[Plugin::getTypeName() . ' - ' . __("Objects management", "genericobject")][$type['itemtype']]= $GenObjectName; 
-         if (class_exists('PluginGenericobject'.$GenObjectName)) {
-             Plugin::registerClass($type['itemtype']);
-         }
+      if (class_exists('PluginGenericobjectType')) {
+          foreach ((new PluginGenericobjectType())->find([]) as $type) {
+             $GenObjectName = $type['itemtype']::getTypeName(2);
+             $tabs[Plugin::getTypeName() . ' - ' . __("Objects management", "genericobject")][$type['itemtype']]= $GenObjectName; 
+             if (class_exists('PluginGenericobject'.$GenObjectName)) {
+                 Plugin::registerClass($type['itemtype']);
+             }
+          }
       }
    
       $tabs[__('Assistance')] = [
