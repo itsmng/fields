@@ -72,7 +72,7 @@ class PluginFieldsLabelTranslation extends CommonDBTM
                   UNIQUE KEY `unicity` (`itemtype`, `items_id`, `language`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
             $DB->query($query) or die($DB->error());
-        } elseif ($version == '1.15') {
+        } elseif ($DB->fieldExists($table, 'plugin_fields_itemtype')) {
             $query = "ALTER TABLE `$table`
                   CHANGE `plugin_fields_itemtype` `itemtype` VARCHAR(30) NOT NULL,
                   CHANGE `plugin_fields_items_id` `items_id` INT(11) NOT NULL;";
