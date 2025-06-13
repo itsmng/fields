@@ -498,8 +498,10 @@ class PluginFieldsContainer extends CommonDBTM {
 
       foreach (json_decode($fields['itemtypes']) as $itemtype) {
          //install table for receive field
-         $classname = self::getClassname($itemtype, $fields['name']);
-         $classname::install();
+         if (class_exists($itemtype)) {
+             $classname = self::getClassname($itemtype, $fields['name']);
+             $classname::install();
+         }
       }
    }
 
