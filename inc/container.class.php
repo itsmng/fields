@@ -102,6 +102,8 @@ class PluginFieldsContainer extends CommonDBTM {
          $migration->migrationOneTable($table);
       }
 
+      self::fixMalformedItemtypes($migration);
+
       // Fix containers names that were generated prior to Fields 1.9.2.
       $glpi_version = preg_replace('/^((\d+\.?)+).*$/', '$1', GLPI_VERSION);
       $bad_named_containers = $DB->request(
@@ -498,9 +500,94 @@ class PluginFieldsContainer extends CommonDBTM {
 
       foreach (json_decode($fields['itemtypes']) as $itemtype) {
          //install table for receive field
+         if (!class_exists($itemtype)) {
+            continue;
+         }
+
          $classname = self::getClassname($itemtype, $fields['name']);
          $classname::install();
       }
+   }
+
+   /**
+    * Normalize malformed itemtypes values stored as JSON strings inside the JSON array.
+    *
+    * Example: ["[\"Ticket\"]"] => ["Ticket"]
+    *
+    * @param Migration $migration Migration instance
+    *
+    * @return void
+    */
+   private static function fixMalformedItemtypes(Migration $migration) {
+      $container = new self();
+      $containers = $container->find();
+      $fixed = 0;
+
+      foreach ($containers as $data) {
+         $normalized = self::normalizeItemtypesValue($data['itemtypes']);
+         if ($normalized === $data['itemtypes']) {
+            continue;
+         }
+
+         $data['itemtypes'] = $normalized;
+         $container->update($data, false);
+         $fixed++;
+      }
+
+      if ($fixed > 0) {
+         $migration->displayMessage(
+            sprintf(__('Fixed malformed itemtypes entries: %d', 'fields'), $fixed)
+         );
+      }
+   }
+
+   /**
+    * Flatten one level of JSON-encoded itemtypes values.
+    *
+    * @param string|null $itemtypes Raw DB value
+    *
+    * @return string|null
+    */
+   private static function normalizeItemtypesValue($itemtypes) {
+      if (!is_string($itemtypes) || $itemtypes === '') {
+         return $itemtypes;
+      }
+
+      $decoded = json_decode($itemtypes, true);
+      if (!is_array($decoded)) {
+         return $itemtypes;
+      }
+
+      $normalized = [];
+      $changed = false;
+
+      foreach ($decoded as $itemtype) {
+         if (!is_string($itemtype)) {
+            $normalized[] = $itemtype;
+            continue;
+         }
+
+         $nested = json_decode($itemtype, true);
+         $is_nested_list = is_array($nested)
+            && array_keys($nested) === range(0, count($nested) - 1)
+            && count(array_filter($nested, 'is_string')) === count($nested);
+
+         if ($is_nested_list) {
+            foreach ($nested as $nested_itemtype) {
+               $normalized[] = $nested_itemtype;
+            }
+            $changed = true;
+            continue;
+         }
+
+         $normalized[] = $itemtype;
+      }
+
+      if (!$changed) {
+         return $itemtypes;
+      }
+
+      return json_encode($normalized);
    }
 
    public static function generateTemplate($fields) {
