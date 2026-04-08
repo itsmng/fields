@@ -41,7 +41,7 @@ jobs:
           files: /home/runner/work/fields/fields-${{ github.ref_name }}.tgz
           body: "New release is available"
           name: ${{ github.ref_name }}
-          draft: true
+          draft: false
           generate_release_notes: true
 
       - name: Create ITSM Ticket
