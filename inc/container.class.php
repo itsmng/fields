@@ -687,15 +687,29 @@ class PluginFieldsContainer extends CommonDBTM {
    }
 
    static function preItemPurge($item) {
+      global $DB;
+
       $itemtype = get_class($item);
       $containers = new self();
       $founded_containers = $containers->find();
       foreach ($founded_containers as $container) {
          $itemtypes = json_decode($container['itemtypes']);
          if (in_array($itemtype, $itemtypes)) {
-            $classname = 'PluginFields' . $itemtype . getSingular($container['name']);
-            $fields = new $classname();
-            $fields->deleteByCriteria(['items_id' => $item->fields['id']], true);
+            $classname = self::getClassname($itemtype, $container['name']);
+
+            if (class_exists($classname)) {
+               $fields = new $classname();
+               $fields->deleteByCriteria(['items_id' => $item->fields['id']], true);
+               continue;
+            }
+
+            $table = getTableForItemType($classname);
+            if ($DB->tableExists($table)) {
+               $DB->delete(
+                  $table,
+                  ['items_id' => $item->fields['id']]
+               );
+            }
          }
       }
       return true;
