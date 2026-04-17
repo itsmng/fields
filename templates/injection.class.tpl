@@ -16,7 +16,8 @@ class %%CLASSNAME%%Injection extends %%CLASSNAME%% implements PluginDatainjectio
    }
 
    static function getTypeName($nb = 0) {
-      return %%ITEMTYPE%%::getTypeName() . " - %%CONTAINER_NAME%%";
+      $itemtype = %%ITEMTYPE%%;
+      return $itemtype::getTypeName($nb) . " - " . %%CONTAINER_NAME%%;
    }
 
    /**
@@ -34,7 +35,7 @@ class %%CLASSNAME%%Injection extends %%CLASSNAME%% implements PluginDatainjectio
     * @return an array of GLPI types
    **/
    function connectedTo() {
-      return array('%%ITEMTYPE%%');
+      return [%%ITEMTYPE%%];
    }
 
    /**
@@ -45,7 +46,7 @@ class %%CLASSNAME%%Injection extends %%CLASSNAME%% implements PluginDatainjectio
     * @return array of search options, as defined in each commondbtm object
    **/
    function getOptions($primary_type='') {
-      $searchoptions = PluginFieldsContainer::getAddSearchOptions('%%ITEMTYPE%%', %%CONTAINER_ID%%);
+      $searchoptions = PluginFieldsContainer::getAddSearchOptions(%%ITEMTYPE%%, (int)%%CONTAINER_ID%%);
 
       foreach ($searchoptions as $id => $data) {
          $searchoptions[$id]['injectable'] = PluginDatainjectionCommonInjectionLib::FIELD_INJECTABLE;

@@ -96,6 +96,14 @@ class PluginFieldsDropdown {
    }
 
    static function create($input) {
+      if (!isset($input['name'], $input['id'], $input['label'])) {
+         return false;
+      }
+
+      $input['name'] = PluginFieldsToolbox::sanitizeLabel((string)$input['name']);
+      $input['id'] = (int)PluginFieldsToolbox::sanitizeLabel((string)$input['id']);
+      $input['label'] = PluginFieldsToolbox::sanitizeLabel((string)$input['label']);
+
       //get class template
       $template_class = file_get_contents(PLUGINFIELDS_DIR."/templates/dropdown.class.tpl");
       if ($template_class === false) {
@@ -106,26 +114,16 @@ class PluginFieldsDropdown {
 
       //create dropdown class file
       $template_class = str_replace(
-         "%%CLASSNAME%%",
-         $classname,
+         ["%%CLASSNAME%%", "%%FIELDNAME%%", "%%FIELDID%%", "%%LABEL%%"],
+         [
+            $classname,
+            var_export($input['name'], true),
+            var_export($input['id'], true),
+            var_export($input['label'], true),
+         ],
          $template_class
       );
-      $template_class = str_replace(
-         "%%FIELDNAME%%",
-         $input['name'],
-         $template_class
-      );
-      $template_class = str_replace(
-         "%%FIELDID%%",
-         $input['id'],
-         $template_class
-      );
-      $template_class = str_replace(
-         "%%LABEL%%",
-         $input['label'],
-         $template_class
-      );
-      $class_filename = $input['name']."dropdown.class.php";
+      $class_filename = basename($input['name'])."dropdown.class.php";
       if (file_put_contents(PLUGINFIELDS_CLASS_PATH . "/$class_filename",
                             $template_class) === false) {
          Toolbox::logDebug("Error : dropdown class file creation - $class_filename");
@@ -141,7 +139,7 @@ class PluginFieldsDropdown {
 
       //create dropdown front file
       $template_front = str_replace("%%CLASSNAME%%", $classname, $template_front);
-      $front_filename = $input['name']."dropdown.php";
+      $front_filename = basename($input['name'])."dropdown.php";
       if (file_put_contents(PLUGINFIELDS_FRONT_PATH . "/$front_filename",
                             $template_front) === false) {
          Toolbox::logDebug("Error : dropdown front file creation - $class_filename");
@@ -156,7 +154,7 @@ class PluginFieldsDropdown {
 
       //create dropdown form file
       $template_form = str_replace("%%CLASSNAME%%", $classname, $template_form);
-      $form_filename = $input['name']."dropdown.form.php";
+      $form_filename = basename($input['name'])."dropdown.form.php";
       if (file_put_contents(PLUGINFIELDS_FRONT_PATH . "/$form_filename",
                             $template_form) === false) {
          Toolbox::logDebug("Error : get dropdown form template error");
