@@ -89,6 +89,20 @@ class PluginFieldsToolbox
     }
 
     /**
+     * Remove characters that should never be written verbatim into generated PHP.
+     *
+     * @param string $label
+     *
+     * @return string
+     */
+    public static function sanitizeLabel($label)
+    {
+        $sanitized = preg_replace('/[^\p{L}\p{N}\s\-_\.]/u', '', $label);
+
+        return is_string($sanitized) ? $sanitized : '';
+    }
+
+    /**
      * Fix dropdown names that were generated prior to Fields 1.9.2.
      *
      * @param Migration $migration

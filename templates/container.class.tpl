@@ -2,7 +2,7 @@
 
 class %%CLASSNAME%% extends CommonDBTM
 {
-   static $rightname = '%%ITEMTYPE_RIGHT%%';
+   static $rightname = %%ITEMTYPE_RIGHT%%;
 
    static function install($containers_id = 0) {
       global $DB;
@@ -15,8 +15,8 @@ class %%CLASSNAME%% extends CommonDBTM
          $query = "CREATE TABLE IF NOT EXISTS `$table` (
                   `id`                               INT(11)      NOT NULL auto_increment,
                   `items_id`                         INT(11)      NOT NULL,
-                  `itemtype`                         VARCHAR(255) DEFAULT '%%ITEMTYPE%%',
-                  `plugin_fields_containers_id`      INT(11)      NOT NULL DEFAULT '%%CONTAINER%%',
+                  `itemtype`                         VARCHAR(255) DEFAULT " . var_export(%%ITEMTYPE%%, true) . ",
+                  `plugin_fields_containers_id`      INT(11)      NOT NULL DEFAULT " . var_export(%%CONTAINER%%, true) . ",
                   PRIMARY KEY                        (`id`),
                   UNIQUE INDEX `itemtype_item_container`
                      (`itemtype`, `items_id`, `plugin_fields_containers_id`)
