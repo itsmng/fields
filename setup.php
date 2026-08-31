@@ -183,7 +183,7 @@ function plugin_version_fields() : array {
       'name'           => __("Additionnal fields", "fields"),
       'version'        => PLUGIN_FIELDS_VERSION,
       'author'         => 'Teclib\', Olivier Moron, Minzord',
-      'homepage'       => 'https://github.com/itsmng/itsm-plugin_fields',
+      'homepage'       => 'https://github.com/itsmng/fields',
       'license'        => 'GPLv2+',
       'requirements'   => [
          'glpi' => [
