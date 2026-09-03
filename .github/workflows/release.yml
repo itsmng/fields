@@ -39,7 +39,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt update
-          sudo apt install -y build-essential dpkg-dev debhelper
+          sudo apt install -y build-essential dpkg-dev debhelper composer
 
       - name: Build DEB Package
         run: |
