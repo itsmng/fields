@@ -289,10 +289,15 @@ class PluginFieldsField extends CommonDBTM
     {
         global $DB;
 
+        $container_id = (int) (
+            $this->input['plugin_fields_containers_id']
+            ?? $this->fields['plugin_fields_containers_id']
+            ?? 0
+        );
         $sql = "SELECT max(`ranking`) AS `rank`
               FROM `" . self::getTable() . "`
               WHERE `plugin_fields_containers_id` = '" .
-            $this->fields['plugin_fields_containers_id'] . "'";
+            $container_id . "'";
         $result = $DB->query($sql);
 
         if ($DB->numrows($result) > 0) {
@@ -351,7 +356,7 @@ class PluginFieldsField extends CommonDBTM
         $query = "SELECT `id`, `label`
                 FROM `" . $this->getTable() . "`
                 WHERE `plugin_fields_containers_id` = '$cID'
-                ORDER BY `ranking` ASC";
+                ORDER BY `ranking` ASC, `id` ASC";
         $result = $DB->query($query);
 
         $rand = mt_rand();
@@ -534,7 +539,10 @@ class PluginFieldsField extends CommonDBTM
 
         //get fields for this container
         $field_obj = new self();
-        $fields = $field_obj->find(['plugin_fields_containers_id' => $c_id, 'is_active' => 1], "ranking");
+        $fields = $field_obj->find(
+            ['plugin_fields_containers_id' => $c_id, 'is_active' => 1],
+            ['ranking', 'id']
+        );
         echo "<form method='POST' action='" . Plugin::getWebDir('fields') . "/front/container.form.php'>";
         echo Html::hidden('plugin_fields_containers_id', ['value' => $c_id]);
         echo Html::hidden('items_id', ['value' => $items_id]);
@@ -577,7 +585,7 @@ class PluginFieldsField extends CommonDBTM
                     'plugin_fields_containers_id' => $c_id,
                     'is_active' => 1,
                 ],
-                "ranking"
+                ['ranking', 'id']
             );
         } else {
             $fields = [];
