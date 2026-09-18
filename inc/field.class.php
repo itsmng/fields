@@ -547,17 +547,15 @@ class PluginFieldsField extends CommonDBTM
         echo Html::hidden('plugin_fields_containers_id', ['value' => $c_id]);
         echo Html::hidden('items_id', ['value' => $items_id]);
         echo Html::hidden('itemtype', ['value' => $itemtype]);
-        echo "<table class='tab_cadre_fixe'>";
-        echo self::prepareHtmlFields($fields, $items_id, $itemtype, $canedit);
+        echo self::prepareHtmlFields($fields, $items_id, $itemtype, $canedit, false);
 
         if ($canedit) {
-            echo "<tr><td class='tab_bg_2 center' colspan='4'>";
+            echo "<div class='d-flex justify-content-center'>";
             echo "<input type='submit' name='update_fields_values' value=\"" .
                 _sx("button", "Save") . "\" class='btn btn-secondary'>";
-            echo "</td></tr>";
+            echo "</div>";
         }
 
-        echo "</table>";
         Html::closeForm();
 
         return true;
@@ -740,8 +738,10 @@ class PluginFieldsField extends CommonDBTM
 
         //show all fields
         $is_form_layout = !$show_table;
+        $html = "";
         $wrapper_suffix = '';
-        if ($is_form_layout) {
+        $container_label = '';
+        if ($is_form_layout && $wrap_section) {
             $container_for_label = [
                 'itemtype' => PluginFieldsContainer::getType(),
                 'id' => $container_obj->getID(),
@@ -752,19 +752,6 @@ class PluginFieldsField extends CommonDBTM
             if ($container_label === '') {
                 $container_label = htmlspecialchars($container_obj->fields['label'], ENT_QUOTES, 'UTF-8');
             }
-
-            if ($wrap_section) {
-                $html = "<div class='form-section plugin-fields-section' data-plugin-fields-container-id='" . $container_obj->getID() . "'>";
-                $html .= "<h2 class='form-section-header'>" . $container_label . "</h2>";
-                $html .= "<div class='form-section-content'>";
-                $html .= "<div class='row g-3 plugin-fields-grid'>";
-                $wrapper_suffix = "</div></div></div>";
-            } else {
-                $html = "<div class='row g-3 plugin-fields-grid'>";
-                $wrapper_suffix = "</div>";
-            }
-        } else {
-            $html = "";
         }
         $odd = 0;
         foreach ($fields as $field) {
@@ -787,10 +774,21 @@ class PluginFieldsField extends CommonDBTM
                     $html .= "<th colspan='4'>" . $safe_label . "</th>";
                     $html .= "</tr>";
                 } else {
-                    $html .= "<div class='col-12 plugin-fields-header'><h3 class='h5 text-muted mb-0'>" . $safe_label . "</h3></div>";
+                    $html .= $wrapper_suffix;
+                    $html .= self::openFormSection($container_obj->getID(), $safe_label, true);
+                    $wrapper_suffix = "</div></div></div>";
                 }
                 $odd = 0;
             } else {
+                if ($is_form_layout && $wrapper_suffix === '') {
+                    if ($wrap_section) {
+                        $html .= self::openFormSection($container_obj->getID(), $container_label);
+                        $wrapper_suffix = "</div></div></div>";
+                    } else {
+                        $html .= "<div class='row g-3 plugin-fields-grid'>";
+                        $wrapper_suffix = "</div>";
+                    }
+                }
                 //get value
                 $value = null;
                 if (is_array($found_v)) {
@@ -1157,6 +1155,20 @@ class PluginFieldsField extends CommonDBTM
         unset($_SESSION['plugin']['fields']['values_sent']);
 
         return $html;
+    }
+
+    /**
+     * Open a native form section. The translated label must already be HTML-escaped.
+     */
+    private static function openFormSection($container_id, $label, $is_header = false)
+    {
+        $classes = 'form-section plugin-fields-section';
+        if ($is_header) {
+            $classes .= ' plugin-fields-header';
+        }
+        return "<div class='" . $classes . "' data-plugin-fields-container-id='" . $container_id . "'>"
+            . "<h2 class='form-section-header'>" . $label . "</h2>"
+            . "<div class='form-section-content'><div class='row g-3 plugin-fields-grid'>";
     }
 
     static function showSingle($itemtype, $searchOption, $massiveaction = false)
