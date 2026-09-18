@@ -769,7 +769,6 @@ class PluginFieldsField extends CommonDBTM
         $odd = 0;
         foreach ($fields as $field) {
 
-            ob_start();
             $field['itemtype'] = self::getType();
             $txt_label = PluginFieldsLabelTranslation::getLabelFor($field);
             $safe_label = htmlspecialchars($txt_label, ENT_QUOTES, 'UTF-8');
@@ -781,6 +780,9 @@ class PluginFieldsField extends CommonDBTM
 
             if ($field['type'] === 'header') {
                 if ($show_table) {
+                    if ($odd % 2 == 1) {
+                        $html .= "</tr>";
+                    }
                     $html .= "<tr class='tab_bg_2'>";
                     $html .= "<th colspan='4'>" . $safe_label . "</th>";
                     $html .= "</tr>";
@@ -854,6 +856,7 @@ class PluginFieldsField extends CommonDBTM
                 }
 
                 $readonly = $field['is_readonly'];
+                ob_start();
                 switch ($field['type']) {
                     case 'number':
                         $value = Html::cleanInputText($value);
@@ -1134,6 +1137,7 @@ class PluginFieldsField extends CommonDBTM
                             }
                         }
                 }
+                $html .= ob_get_clean();
                 if ($show_table) {
                     $html .= "</td>";
                     if ($odd % 2 == 1) {
@@ -1142,7 +1146,6 @@ class PluginFieldsField extends CommonDBTM
                     $odd++;
                 }
             }
-            $html .= ob_get_clean();
         }
         if ($is_form_layout) {
             $html .= $wrapper_suffix;
